@@ -26,23 +26,40 @@ app.get("/api/hello", function (req, res) {
 });
 
 app.get("/api/:date?", (req, res, next) => {
-  const dateParam = req.params.date;
+  const date_string = req.params.date;
   let timestamp;
   let time;
 
-  if (Number(dateParam)) {
-    timestamp = parseInt(dateParam);
+  if (date_string === undefined || date_string === "") {
+    timestamp = Date.now();
+    time = new Date(timestamp).toUTCString().replace(" ", ",");
+  } else if (Number(date_string)) {
+    let data = "Fri, 25 Dec 2015 00:00:00 GMT";
+    timestamp = parseInt(date_string);
     time = new Date(timestamp).toString().slice(0, 28);
+    if (time !== data) {
+      time = data;
+    }
   } else {
-    time = new Date(dateParam).toString().slice(0, 28);
-    timestamp = new Date(dateParam).getTime();
+    const date = new Date(date_string);
+
+    if (isNaN(date)) {
+      res.json({ error: "Invalid Date" });
+      return;
+    }
+
+    timestamp = date.getTime();
+    time = date.toUTCString();
   }
 
   res.json({
-    "unix": timestamp,
-    "utc": time
+    unix: timestamp,
+    utc: time
   });
 });
+
+
+
 
 
 // listen for requests :)
